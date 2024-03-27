@@ -6,6 +6,7 @@ interface AnimatedCharacter {
   object: THREE.Object3D;
   mixer: THREE.AnimationMixer;
   actions: THREE.AnimationAction[];
+  currentAction?: THREE.AnimationAction;
 }
 
 export class GameState {
@@ -77,23 +78,55 @@ export class GameState {
     if (this.currentCharacter) {
       this.playAnimation(name, this.currentCharacter);
     }
+
+    /**
+     * Things to check:
+     *
+     * we have a current character to animate
+     * fade from any previously playing animation
+     */
   }
 
   private getAnimatedCharacter(name: string): AnimatedCharacter {
     const object = this.gameLoader.modelLoader.get(name);
 
     const mixer = new THREE.AnimationMixer(object);
+
+    // Create actions from all clips
     const clips = this.gameLoader.animLoader.getClips(["waving", "idle"]);
     const actions = clips.map((clip) => mixer.clipAction(clip));
+
+    // Set any properties on particular actions
+    const wavingAction = actions[0];
+    wavingAction.setLoop(THREE.LoopOnce, 1);
 
     return { object, mixer, actions };
   }
 
   private playAnimation(name: string, character: AnimatedCharacter) {
-    const action = character.actions.find(
-      (action) => action.getClip().name === name
-    );
-    action?.play();
+    // Find the new action with the given name
+    const nextAction = this.getAction(name, character.actions);
+    if (!nextAction) {
+      throw Error(
+        "Could not find action with name " + name + "for character " + character
+      );
+    }
+
+    // Crossfade from any currently playing animation
+    if (character.currentAction) {
+      nextAction.crossFadeFrom(character.currentAction, 1, true).play();
+    } else {
+      // First action to play
+      nextAction.play();
+      character.currentAction = nextAction;
+    }
+  }
+
+  private getAction(
+    name: string,
+    actions: THREE.AnimationAction[]
+  ): THREE.AnimationAction | undefined {
+    return actions.find((action) => action.getClip().name === name);
   }
 
   private onCanvasResize = () => {
