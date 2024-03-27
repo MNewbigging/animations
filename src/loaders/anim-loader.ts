@@ -45,6 +45,7 @@ export class AnimLoader {
       // Should only be one animation
       if (group.animations.length) {
         const clip = group.animations[0];
+        clip.name = "waving";
         this.clips.set("waving", clip);
       }
     });
@@ -56,6 +57,7 @@ export class AnimLoader {
       // Should only be one animation
       if (group.animations.length) {
         const clip = group.animations[0];
+        clip.name = "idle";
         this.clips.set("idle", clip);
       }
     });

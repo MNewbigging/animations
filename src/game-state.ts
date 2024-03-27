@@ -16,6 +16,7 @@ export class GameState {
   private clock = new THREE.Clock();
 
   private characters: AnimatedCharacter[] = [];
+  private currentCharacter: AnimatedCharacter;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -52,25 +53,47 @@ export class GameState {
     // Setup lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     this.scene.add(ambientLight);
-
     const directLight = new THREE.DirectionalLight();
     this.scene.add(directLight);
 
-    // Add dummy model
-    const object = this.gameLoader.modelLoader.get("dummy");
-    this.scene.add(object);
+    // Setup animated character for dummy
+    const dummyChar = this.getAnimatedCharacter("dummy");
+    this.characters.push(dummyChar);
+
+    // This is the current character
+    this.currentCharacter = dummyChar;
+    this.scene.add(dummyChar.object);
+
+    // Start the idle animation
+    this.playAnimation("idle", dummyChar);
+
+    // Start game
+    this.clock.start();
+    this.update();
+  }
+
+  // From a game-ui button
+  requestAnimation(name: string) {
+    if (this.currentCharacter) {
+      this.playAnimation(name, this.currentCharacter);
+    }
+  }
+
+  private getAnimatedCharacter(name: string): AnimatedCharacter {
+    const object = this.gameLoader.modelLoader.get(name);
 
     const mixer = new THREE.AnimationMixer(object);
     const clips = this.gameLoader.animLoader.getClips(["waving", "idle"]);
     const actions = clips.map((clip) => mixer.clipAction(clip));
 
-    this.characters.push({ object, mixer, actions });
+    return { object, mixer, actions };
+  }
 
-    actions[1].play();
-
-    // Start game
-    this.clock.start();
-    this.update();
+  private playAnimation(name: string, character: AnimatedCharacter) {
+    const action = character.actions.find(
+      (action) => action.getClip().name === name
+    );
+    action?.play();
   }
 
   private onCanvasResize = () => {

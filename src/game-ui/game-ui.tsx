@@ -9,13 +9,7 @@ interface GameUIProps {
 export const GameUI: React.FC<GameUIProps> = ({ gameState }) => {
   return (
     <div className="interface">
-      <button
-        onClick={() => {
-          console.log("test ");
-        }}
-      >
-        Test
-      </button>
+      <button onClick={() => gameState.requestAnimation("waving")}>Test</button>
     </div>
   );
 };
