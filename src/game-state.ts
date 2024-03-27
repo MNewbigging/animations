@@ -27,7 +27,6 @@ export class GameState {
     // Setup renderer
     this.renderer = new THREE.WebGLRenderer({ canvas });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    THREE.ColorManagement.legacyMode = false;
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.toneMapping = THREE.LinearToneMapping;
     this.renderer.toneMappingExposure = 1;

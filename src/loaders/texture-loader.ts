@@ -11,11 +11,8 @@ export class TextureLoader {
 
   load(onLoad: () => void) {
     // Setup loading manager
-    this.loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
-      console.log(
-        `Loading texture: ${url}. \n Loaded ${itemsLoaded} of ${itemsTotal}`
-      );
-    };
+    this.loadingManager.onError = (url) =>
+      console.error("error loading texture", url);
 
     this.loadingManager.onLoad = () => {
       onLoad();

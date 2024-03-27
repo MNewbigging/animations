@@ -31,7 +31,7 @@ export class ModelLoader {
 
   load(onLoad: () => void) {
     // Setup loading manager
-    this.loadingManager.onError = (url) => console.log("error loading", url);
+    this.loadingManager.onError = (url) => console.error("error loading", url);
 
     this.loadingManager.onLoad = () => {
       this.loading = false;
