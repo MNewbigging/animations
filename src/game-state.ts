@@ -64,6 +64,10 @@ export class GameState {
     // This is the current character
     this.currentCharacter = dummyChar;
     this.scene.add(dummyChar.object);
+    this.currentCharacter.mixer.addEventListener(
+      "finished",
+      this.onAnimationEnd
+    );
 
     // Start the idle animation
     this.playAnimation("idle", dummyChar);
@@ -75,17 +79,20 @@ export class GameState {
 
   // From a game-ui button
   requestAnimation(name: string) {
-    if (this.currentCharacter) {
-      this.playAnimation(name, this.currentCharacter);
-    }
-
-    /**
-     * Things to check:
-     *
-     * we have a current character to animate
-     * fade from any previously playing animation
-     */
+    this.playAnimation(name, this.currentCharacter);
   }
+
+  // Doesn't seem to be a type for this event type
+  private onAnimationEnd = (e: any) => {
+    const action = e.action as THREE.AnimationAction;
+    const name = action.getClip().name;
+
+    // Seems that if an animation loops, it never finishes
+    // Therefore any animation that caused this callback is done
+    // And we can revert to the idle animation
+    this.currentCharacter.currentAction?.stop();
+    this.playAnimation("idle", this.currentCharacter);
+  };
 
   private getAnimatedCharacter(name: string): AnimatedCharacter {
     const object = this.gameLoader.modelLoader.get(name);
@@ -99,6 +106,7 @@ export class GameState {
     // Set any properties on particular actions
     const wavingAction = actions[0];
     wavingAction.setLoop(THREE.LoopOnce, 1);
+    wavingAction.clampWhenFinished = true;
 
     return { object, mixer, actions };
   }
