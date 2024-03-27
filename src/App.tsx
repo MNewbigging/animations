@@ -5,6 +5,7 @@ import { observer } from "mobx-react-lite";
 
 import { AppState } from "./app-state";
 import { LoadingScreen } from "./loading-screen/loading-screen";
+import { GameUI } from "./game-ui/game-ui";
 
 interface AppProps {
   appState: AppState;
@@ -16,6 +17,7 @@ export const App: React.FC<AppProps> = observer(({ appState }) => {
       <canvas id="canvas"></canvas>
 
       {appState.gameLoader.loading && <LoadingScreen />}
+      {appState.gameState && <GameUI gameState={appState.gameState} />}
     </div>
   );
 });
