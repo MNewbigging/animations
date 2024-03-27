@@ -61,12 +61,12 @@ export class GameState {
     this.scene.add(object);
 
     const mixer = new THREE.AnimationMixer(object);
-    const clips = this.gameLoader.animLoader.getClips(["waving"]);
+    const clips = this.gameLoader.animLoader.getClips(["waving", "idle"]);
     const actions = clips.map((clip) => mixer.clipAction(clip));
 
     this.characters.push({ object, mixer, actions });
 
-    actions[0].play();
+    actions[1].play();
 
     // Start game
     this.clock.start();

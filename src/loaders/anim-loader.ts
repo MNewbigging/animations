@@ -36,6 +36,7 @@ export class AnimLoader {
     const loader = new FBXLoader(this.loadingManager);
 
     this.loadWaving(loader);
+    this.loadIdle(loader);
   }
 
   private loadWaving(loader: FBXLoader) {
@@ -45,6 +46,17 @@ export class AnimLoader {
       if (group.animations.length) {
         const clip = group.animations[0];
         this.clips.set("waving", clip);
+      }
+    });
+  }
+
+  private loadIdle(loader: FBXLoader) {
+    const url = new URL("/animations/idle.fbx", import.meta.url).href;
+    loader.load(url, (group) => {
+      // Should only be one animation
+      if (group.animations.length) {
+        const clip = group.animations[0];
+        this.clips.set("idle", clip);
       }
     });
   }
