@@ -1,10 +1,13 @@
 import * as THREE from "three";
 
 export class TextureLoader {
-  loading = false;
   readonly textures = new Map<string, THREE.Texture>();
 
   private loadingManager = new THREE.LoadingManager();
+
+  get(name: string) {
+    return this.textures.get(name);
+  }
 
   load(onLoad: () => void) {
     // Setup loading manager
@@ -15,19 +18,20 @@ export class TextureLoader {
     };
 
     this.loadingManager.onLoad = () => {
-      this.loading = false;
       onLoad();
     };
 
-    this.loading = true;
     this.loadTextures();
   }
 
   private loadTextures() {
     const loader = new THREE.TextureLoader(this.loadingManager);
 
-    // Example
-    const textureUrl = new URL("/path/to/texture", import.meta.url).href;
-    //loader.load(textureUrl, (texture) => this.textures.set('name', texture));
+    this.loadDummyTexture(loader);
+  }
+
+  private loadDummyTexture(loader: THREE.TextureLoader) {
+    const url = new URL("/textures/dummy.png", import.meta.url).href;
+    loader.load(url, (texture) => this.textures.set("dummy", texture));
   }
 }
