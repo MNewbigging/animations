@@ -5,7 +5,7 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { TextureLoader } from "./texture-loader";
 
 export class ModelLoader {
-  loading = false;
+  doneLoading = false;
   readonly models = new Map<string, THREE.Object3D>();
 
   private loadingManager = new THREE.LoadingManager();
@@ -34,12 +34,9 @@ export class ModelLoader {
     this.loadingManager.onError = (url) => console.error("error loading", url);
 
     this.loadingManager.onLoad = () => {
-      this.loading = false;
+      this.doneLoading = true;
       onLoad();
     };
-
-    // Start loading
-    this.loading = true;
 
     // If you need a texture atlas for the models, load it here first
     // remember to set texture.encoding = THREE.sRGBEncoding;

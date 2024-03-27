@@ -1,14 +1,21 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
 import { GameLoader } from "./loaders/game-loader";
-import { addGui } from "./utils/utils";
+
+interface AnimatedCharacter {
+  object: THREE.Object3D;
+  mixer: THREE.AnimationMixer;
+  actions: THREE.AnimationAction[];
+}
 
 export class GameState {
   private scene = new THREE.Scene();
   private camera: THREE.PerspectiveCamera;
   private renderer: THREE.WebGLRenderer;
   private controls: OrbitControls;
+  private clock = new THREE.Clock();
+
+  private characters: AnimatedCharacter[] = [];
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -49,11 +56,20 @@ export class GameState {
     const directLight = new THREE.DirectionalLight();
     this.scene.add(directLight);
 
-    // Add model
-    const dummy = this.gameLoader.modelLoader.get("dummy");
-    this.scene.add(dummy);
+    // Add dummy model
+    const object = this.gameLoader.modelLoader.get("dummy");
+    this.scene.add(object);
+
+    const mixer = new THREE.AnimationMixer(object);
+    const clips = this.gameLoader.animLoader.getClips(["waving"]);
+    const actions = clips.map((clip) => mixer.clipAction(clip));
+
+    this.characters.push({ object, mixer, actions });
+
+    actions[0].play();
 
     // Start game
+    this.clock.start();
     this.update();
   }
 
@@ -72,7 +88,11 @@ export class GameState {
   };
 
   private update = () => {
+    const dt = this.clock.getDelta();
+
     this.controls.update();
+
+    this.characters.forEach((char) => char.mixer.update(dt));
 
     this.renderer.render(this.scene, this.camera);
 
