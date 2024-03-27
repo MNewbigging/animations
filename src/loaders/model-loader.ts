@@ -51,22 +51,9 @@ export class ModelLoader {
   }
 
   private loadModels = () => {
-    const gltfLoader = new GLTFLoader(this.loadingManager);
+    const loader = new FBXLoader(this.loadingManager);
 
-    const boxUrl = new URL("/box-small.glb", import.meta.url).href;
-    gltfLoader.load(boxUrl, (gltf) => {
-      // Traverse the gltf scene
-      gltf.scene.traverse((child) => {
-        const node = child as THREE.Mesh;
-        if (node.isMesh) {
-          // Kenney assets need their metalness reducing to render correctly
-          const mat = node.material as THREE.MeshStandardMaterial;
-          mat.metalness = 0;
-        }
-      });
-
-      this.models.set("box", gltf.scene);
-    });
+    this.loadDummy(loader);
   };
 
   private loadDummy(loader: FBXLoader) {

@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import { GameLoader } from "./loaders/game-loader";
@@ -22,8 +21,8 @@ export class GameState {
       0.1,
       100
     );
-    this.camera.position.z = 1.6;
-    this.camera.position.y = 1.2;
+    this.camera.position.z = 3;
+    this.camera.position.y = 1.3;
 
     // Setup renderer
     this.renderer = new THREE.WebGLRenderer({ canvas });
@@ -36,24 +35,24 @@ export class GameState {
     window.addEventListener("resize", this.onCanvasResize);
     this.onCanvasResize();
 
+    // Setup scene
     this.scene.background = new THREE.Color("#1680AF");
 
+    // Setup controls
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
+    this.controls.target.set(0, 1.3, 0);
 
-    // Lighting
+    // Setup lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     this.scene.add(ambientLight);
 
     const directLight = new THREE.DirectionalLight();
     this.scene.add(directLight);
 
-    // Add box
-    const box = this.gameLoader.modelLoader.get("box");
-    if (box) {
-      addGui(box, "box");
-      this.scene.add(box);
-    }
+    // Add model
+    const dummy = this.gameLoader.modelLoader.get("dummy");
+    this.scene.add(dummy);
 
     // Start game
     this.update();
@@ -74,9 +73,10 @@ export class GameState {
   };
 
   private update = () => {
-    requestAnimationFrame(this.update);
+    this.controls.update();
 
     this.renderer.render(this.scene, this.camera);
-    this.controls.update();
+
+    requestAnimationFrame(this.update);
   };
 }
