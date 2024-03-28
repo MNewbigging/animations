@@ -91,10 +91,12 @@ export class GameState {
 
   // Doesn't seem to be a type for this event type
   private onAnimationEnd = (e: any) => {
-    // At the end of a one-loop anim, revert back to idle action
+    // Check if we since started playing a different anim when this one started
     const name = (e.action as THREE.AnimationAction).getClip().name;
-    console.log("anim ended", name);
-    this.playAnimation("idle", this.currentCharacter);
+    if (name === this.currentCharacter.currentAction.getClip().name) {
+      // No new anim was started, can revert to idle
+      this.playAnimation("idle", this.currentCharacter);
+    }
   };
 
   private getAnimatedCharacter(name: string): AnimatedCharacter {
@@ -103,13 +105,7 @@ export class GameState {
     const mixer = new THREE.AnimationMixer(object);
 
     // Create actions from all clips
-    const clips = this.gameLoader.animLoader.getClips(["idle", "waving"]);
-    const actions = clips.map((clip) => mixer.clipAction(clip));
-
-    // Set any properties on particular actions
-    const wavingAction = actions[1];
-    wavingAction.setLoop(THREE.LoopOnce, 1);
-    wavingAction.clampWhenFinished = true;
+    const actions = this.gameLoader.animLoader.createActions(mixer);
 
     // Set to idle by default
     const currentAction = actions[0];

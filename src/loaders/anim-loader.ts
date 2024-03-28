@@ -19,6 +19,40 @@ export class AnimLoader {
     return clips;
   }
 
+  createActions(mixer: THREE.AnimationMixer) {
+    const actions: THREE.AnimationAction[] = [];
+
+    const idleClip = this.clips.get("idle");
+    if (idleClip) {
+      const action = mixer.clipAction(idleClip);
+      actions.push(action);
+    }
+
+    const wavingClip = this.clips.get("waving");
+    if (wavingClip) {
+      const action = mixer.clipAction(wavingClip);
+      action.setLoop(THREE.LoopOnce, 1);
+      action.clampWhenFinished = true;
+      actions.push(action);
+    }
+
+    const saluteClip = this.clips.get("salute");
+    if (saluteClip) {
+      const action = mixer.clipAction(saluteClip);
+      action.setLoop(THREE.LoopOnce, 1);
+      action.clampWhenFinished = true;
+      actions.push(action);
+    }
+
+    const walkingClip = this.clips.get("walking");
+    if (walkingClip) {
+      const action = mixer.clipAction(walkingClip);
+      actions.push(action);
+    }
+
+    return actions;
+  }
+
   load(onLoad: () => void) {
     // Setup loading manager
     this.loadingManager.onError = (url) => console.error("error loading", url);
@@ -34,9 +68,10 @@ export class AnimLoader {
 
   private loadAnims() {
     const loader = new FBXLoader(this.loadingManager);
-
     this.loadWaving(loader);
     this.loadIdle(loader);
+    this.loadSalute(loader);
+    this.loadWalking(loader);
   }
 
   private loadWaving(loader: FBXLoader) {
@@ -59,6 +94,30 @@ export class AnimLoader {
         const clip = group.animations[0];
         clip.name = "idle";
         this.clips.set("idle", clip);
+      }
+    });
+  }
+
+  private loadSalute(loader: FBXLoader) {
+    const url = new URL("/animations/salute.fbx", import.meta.url).href;
+    loader.load(url, (group) => {
+      // Should only be one animation
+      if (group.animations.length) {
+        const clip = group.animations[0];
+        clip.name = "salute";
+        this.clips.set("salute", clip);
+      }
+    });
+  }
+
+  private loadWalking(loader: FBXLoader) {
+    const url = new URL("/animations/walking.fbx", import.meta.url).href;
+    loader.load(url, (group) => {
+      // Should only be one animation
+      if (group.animations.length) {
+        const clip = group.animations[0];
+        clip.name = "walking";
+        this.clips.set("walking", clip);
       }
     });
   }
