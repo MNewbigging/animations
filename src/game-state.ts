@@ -83,7 +83,10 @@ export class GameState {
 
   // From a game-ui button
   requestAnimation(name: string) {
-    this.playAnimation(name, this.currentCharacter);
+    // Only start if not currently playing that animation
+    if (this.currentCharacter.currentAction.getClip().name !== name) {
+      this.playAnimation(name, this.currentCharacter);
+    }
   }
 
   // Doesn't seem to be a type for this event type
