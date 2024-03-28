@@ -6,7 +6,7 @@ interface AnimatedCharacter {
   object: THREE.Object3D;
   mixer: THREE.AnimationMixer;
   actions: THREE.AnimationAction[];
-  currentAction?: THREE.AnimationAction;
+  currentAction: THREE.AnimationAction;
 }
 
 export class GameState {
@@ -69,8 +69,12 @@ export class GameState {
       this.onAnimationEnd
     );
 
-    // Start the idle animation
-    this.playAnimation("idle", dummyChar);
+    // Start the default animation
+    console.log(
+      "starting default current action: ",
+      dummyChar.currentAction.getClip().name
+    );
+    dummyChar.currentAction.play();
 
     // Start game
     this.clock.start();
@@ -84,13 +88,9 @@ export class GameState {
 
   // Doesn't seem to be a type for this event type
   private onAnimationEnd = (e: any) => {
-    const action = e.action as THREE.AnimationAction;
-    const name = action.getClip().name;
-
-    // Seems that if an animation loops, it never finishes
-    // Therefore any animation that caused this callback is done
-    // And we can revert to the idle animation
-    this.currentCharacter.currentAction?.stop();
+    // At the end of a one-loop anim, revert back to idle action
+    const name = (e.action as THREE.AnimationAction).getClip().name;
+    console.log("anim ended", name);
     this.playAnimation("idle", this.currentCharacter);
   };
 
@@ -100,15 +100,18 @@ export class GameState {
     const mixer = new THREE.AnimationMixer(object);
 
     // Create actions from all clips
-    const clips = this.gameLoader.animLoader.getClips(["waving", "idle"]);
+    const clips = this.gameLoader.animLoader.getClips(["idle", "waving"]);
     const actions = clips.map((clip) => mixer.clipAction(clip));
 
     // Set any properties on particular actions
-    const wavingAction = actions[0];
+    const wavingAction = actions[1];
     wavingAction.setLoop(THREE.LoopOnce, 1);
     wavingAction.clampWhenFinished = true;
 
-    return { object, mixer, actions };
+    // Set to idle by default
+    const currentAction = actions[0];
+
+    return { object, mixer, actions, currentAction };
   }
 
   private playAnimation(name: string, character: AnimatedCharacter) {
@@ -120,14 +123,19 @@ export class GameState {
       );
     }
 
-    // Crossfade from any currently playing animation
-    if (character.currentAction) {
-      nextAction.crossFadeFrom(character.currentAction, 1, true).play();
-    } else {
-      // First action to play
-      nextAction.play();
-      character.currentAction = nextAction;
-    }
+    console.log("playing animation", name);
+
+    // Make sure the next action is reset
+    nextAction.reset();
+
+    // Stop the previous action
+    character.currentAction.stop();
+
+    // Start the next action
+    nextAction.play();
+
+    // Next is now current
+    character.currentAction = nextAction;
   }
 
   private getAction(
