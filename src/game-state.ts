@@ -125,14 +125,16 @@ export class GameState {
 
     console.log("playing animation", name);
 
-    // Make sure the next action is reset
-    nextAction.reset();
+    // Fade out the previous action
+    character.currentAction.fadeOut(1);
 
-    // Stop the previous action
-    character.currentAction.stop();
-
-    // Start the next action
-    nextAction.play();
+    // Fade in the next action
+    nextAction
+      .reset()
+      .setEffectiveTimeScale(1)
+      .setEffectiveWeight(1)
+      .fadeIn(1)
+      .play();
 
     // Next is now current
     character.currentAction = nextAction;
