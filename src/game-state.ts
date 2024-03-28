@@ -129,7 +129,7 @@ export class GameState {
       .reset()
       .setEffectiveTimeScale(1)
       .setEffectiveWeight(1)
-      .crossFadeFrom(character.currentAction, 1, true)
+      .crossFadeFrom(character.currentAction, 1, false)
       .play();
 
     // Next is now current
