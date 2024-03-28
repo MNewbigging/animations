@@ -17,6 +17,12 @@ export const GameUI: React.FC<GameUIProps> = ({ gameState }) => {
       <button onClick={() => gameState.requestAnimation("walking")}>
         Walk
       </button>
+      <button onClick={() => gameState.requestAnimation("slow-run")}>
+        Run
+      </button>
+      <button onClick={() => gameState.requestAnimation("fast-run")}>
+        Sprint
+      </button>
     </div>
   );
 };

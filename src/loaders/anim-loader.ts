@@ -50,6 +50,18 @@ export class AnimLoader {
       actions.push(action);
     }
 
+    const slowRunClip = this.clips.get("slow-run");
+    if (slowRunClip) {
+      const action = mixer.clipAction(slowRunClip);
+      actions.push(action);
+    }
+
+    const fastRunClip = this.clips.get("fast-run");
+    if (fastRunClip) {
+      const action = mixer.clipAction(fastRunClip);
+      actions.push(action);
+    }
+
     return actions;
   }
 
@@ -72,6 +84,8 @@ export class AnimLoader {
     this.loadIdle(loader);
     this.loadSalute(loader);
     this.loadWalking(loader);
+    this.loadSlowRun(loader);
+    this.loadFastRun(loader);
   }
 
   private loadWaving(loader: FBXLoader) {
@@ -118,6 +132,30 @@ export class AnimLoader {
         const clip = group.animations[0];
         clip.name = "walking";
         this.clips.set("walking", clip);
+      }
+    });
+  }
+
+  private loadSlowRun(loader: FBXLoader) {
+    const url = new URL("/animations/slow_run.fbx", import.meta.url).href;
+    loader.load(url, (group) => {
+      // Should only be one animation
+      if (group.animations.length) {
+        const clip = group.animations[0];
+        clip.name = "slow-run";
+        this.clips.set("slow-run", clip);
+      }
+    });
+  }
+
+  private loadFastRun(loader: FBXLoader) {
+    const url = new URL("/animations/fast_run.fbx", import.meta.url).href;
+    loader.load(url, (group) => {
+      // Should only be one animation
+      if (group.animations.length) {
+        const clip = group.animations[0];
+        clip.name = "fast-run";
+        this.clips.set("fast-run", clip);
       }
     });
   }
