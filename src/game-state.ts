@@ -21,6 +21,8 @@ export class GameState {
   private dummy: AnimatedCharacter;
   private floor: THREE.Mesh;
 
+  private targetPosition = new THREE.Vector3();
+
   constructor(
     private canvas: HTMLCanvasElement,
     private gameLoader: GameLoader
@@ -161,6 +163,8 @@ export class GameState {
 
     this.dummy.mixer.update(dt);
 
+    this.moveToTarget(dt);
+
     this.renderer.render(this.scene, this.camera);
 
     requestAnimationFrame(this.update);
@@ -222,12 +226,26 @@ export class GameState {
       return;
     }
 
-    this.moveTo(hit.point);
+    this.targetPosition.copy(hit.point);
   };
 
-  private moveTo(position: THREE.Vector3) {
-    console.log("moving to ", position);
+  private moveToTarget(dt: number) {
+    const object = this.dummy.object;
 
-    this.dummy.object.position.copy(position);
+    // Have we reached the target?
+    const distance = object.position.distanceTo(this.targetPosition);
+    if (distance < 0.05) {
+      // Reached it
+      return;
+    }
+
+    // Move towards
+    const direction = this.targetPosition
+      .clone()
+      .sub(object.position)
+      .normalize();
+    const velocity = direction.multiplyScalar(2 * dt);
+
+    object.position.add(velocity);
   }
 }
