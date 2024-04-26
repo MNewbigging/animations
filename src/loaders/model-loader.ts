@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { TextureLoader } from "./texture-loader";
 
@@ -10,7 +9,7 @@ export class ModelLoader {
 
   private loadingManager = new THREE.LoadingManager();
 
-  private textureLoader = new TextureLoader();
+  textureLoader = new TextureLoader();
 
   get(modelName: string): THREE.Object3D {
     // Return the model if found

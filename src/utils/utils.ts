@@ -9,8 +9,22 @@ export function addGui(object: THREE.Object3D, name = "") {
   gui.add(object.position, "z").name(name + " pos z");
 
   gui
+    .add(object.rotation, "x")
+    .name(name + " rot x")
+    .min(-Math.PI * 2)
+    .max(Math.PI * 2)
+    .step(0.001);
+
+  gui
     .add(object.rotation, "y")
     .name(name + " rot y")
+    .min(0)
+    .max(Math.PI * 2)
+    .step(0.001);
+
+  gui
+    .add(object.rotation, "z")
+    .name(name + " rot z")
     .min(0)
     .max(Math.PI * 2)
     .step(0.001);

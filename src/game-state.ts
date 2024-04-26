@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { GameLoader } from "./loaders/game-loader";
+import { addGui } from "./utils/utils";
 
 interface AnimatedCharacter {
   object: THREE.Object3D;
@@ -18,6 +19,7 @@ export class GameState {
 
   private characters: AnimatedCharacter[] = [];
   private currentCharacter: AnimatedCharacter;
+  private floor: THREE.Mesh;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -56,6 +58,10 @@ export class GameState {
     this.scene.add(ambientLight);
     const directLight = new THREE.DirectionalLight();
     this.scene.add(directLight);
+
+    // Setup floor
+    this.floor = this.createFloor();
+    this.scene.add(this.floor);
 
     // Setup animated character for dummy
     const dummyChar = this.getAnimatedCharacter("dummy");
@@ -168,4 +174,24 @@ export class GameState {
 
     requestAnimationFrame(this.update);
   };
+
+  private createFloor() {
+    const size = 10;
+    const geom = new THREE.PlaneGeometry(size, size);
+    const mat = new THREE.MeshBasicMaterial();
+
+    const texture = this.gameLoader.modelLoader.textureLoader.get("grid");
+    if (texture) {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.offset.set(0, 0);
+      texture.repeat.set(size / 2, size / 2);
+      mat.map = texture;
+    }
+
+    const floor = new THREE.Mesh(geom, mat);
+    floor.rotateX(-Math.PI / 2);
+
+    return floor;
+  }
 }

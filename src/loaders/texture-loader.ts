@@ -25,10 +25,19 @@ export class TextureLoader {
     const loader = new THREE.TextureLoader(this.loadingManager);
 
     this.loadDummyTexture(loader);
+    this.loadGridTexture(loader);
   }
 
   private loadDummyTexture(loader: THREE.TextureLoader) {
     const url = new URL("/textures/dummy.png", import.meta.url).href;
     loader.load(url, (texture) => this.textures.set("dummy", texture));
+  }
+
+  private loadGridTexture(loader: THREE.TextureLoader) {
+    const url = new URL("/textures/grid.png", import.meta.url).href;
+    loader.load(url, (texture) => {
+      texture.encoding = THREE.sRGBEncoding;
+      this.textures.set("grid", texture);
+    });
   }
 }
