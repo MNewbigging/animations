@@ -21,7 +21,9 @@ export class GameState {
   private dummy: AnimatedCharacter;
   private floor: THREE.Mesh;
 
+  private movingToTarget = false;
   private targetPosition = new THREE.Vector3();
+  private targetQuat = new THREE.Quaternion();
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -128,7 +130,7 @@ export class GameState {
       .reset()
       .setEffectiveTimeScale(1)
       .setEffectiveWeight(1)
-      .crossFadeFrom(character.currentAction, 1, false)
+      .crossFadeFrom(character.currentAction, 0.25, false)
       .play();
 
     // Next is now current
@@ -163,7 +165,9 @@ export class GameState {
 
     this.dummy.mixer.update(dt);
 
-    this.moveToTarget(dt);
+    if (this.movingToTarget) {
+      this.moveToTarget(dt);
+    }
 
     this.renderer.render(this.scene, this.camera);
 
@@ -226,8 +230,20 @@ export class GameState {
       return;
     }
 
-    this.targetPosition.copy(hit.point);
+    // Head there
+    this.setMoveTarget(hit.point);
   };
+
+  private setMoveTarget(point: THREE.Vector3) {
+    this.targetPosition.copy(point);
+
+    const tempQuat = this.dummy.object.quaternion.clone();
+    this.dummy.object.lookAt(point);
+    this.targetQuat.copy(this.dummy.object.quaternion);
+    this.dummy.object.quaternion.copy(tempQuat);
+
+    this.movingToTarget = true;
+  }
 
   private moveToTarget(dt: number) {
     const object = this.dummy.object;
@@ -236,16 +252,21 @@ export class GameState {
     const distance = object.position.distanceTo(this.targetPosition);
     if (distance < 0.05) {
       // Reached it
+      this.requestAnimation("idle");
+      this.movingToTarget = false;
       return;
     }
 
     // Move towards
+    this.requestAnimation("walking");
+
     const direction = this.targetPosition
       .clone()
       .sub(object.position)
       .normalize();
     const velocity = direction.multiplyScalar(2 * dt);
-
     object.position.add(velocity);
+
+    object.quaternion.rotateTowards(this.targetQuat, 8 * dt);
   }
 }
