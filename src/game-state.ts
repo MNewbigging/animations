@@ -16,9 +16,9 @@ export class GameState {
   private renderer: THREE.WebGLRenderer;
   private controls: OrbitControls;
   private clock = new THREE.Clock();
+  private raycaster = new THREE.Raycaster();
 
-  private characters: AnimatedCharacter[] = [];
-  private currentCharacter: AnimatedCharacter;
+  private dummy: AnimatedCharacter;
   private floor: THREE.Mesh;
 
   constructor(
@@ -52,6 +52,7 @@ export class GameState {
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
     this.controls.target.set(0, 1.3, 0);
+    this.controls.enablePan = false;
 
     // Setup lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
@@ -65,22 +66,12 @@ export class GameState {
 
     // Setup animated character for dummy
     const dummyChar = this.getAnimatedCharacter("dummy");
-    this.characters.push(dummyChar);
-
-    // This is the current character
-    this.currentCharacter = dummyChar;
+    this.dummy = dummyChar;
     this.scene.add(dummyChar.object);
-    this.currentCharacter.mixer.addEventListener(
-      "finished",
-      this.onAnimationEnd
-    );
-
-    // Start the default animation
-    console.log(
-      "starting default current action: ",
-      dummyChar.currentAction.getClip().name
-    );
+    this.dummy.mixer.addEventListener("finished", this.onAnimationEnd);
     dummyChar.currentAction.play();
+
+    window.addEventListener("pointerdown", this.onClick);
 
     // Start game
     this.clock.start();
@@ -90,8 +81,8 @@ export class GameState {
   // From a game-ui button
   requestAnimation(name: string) {
     // Only start if not currently playing that animation
-    if (this.currentCharacter.currentAction.getClip().name !== name) {
-      this.playAnimation(name, this.currentCharacter);
+    if (this.dummy.currentAction.getClip().name !== name) {
+      this.playAnimation(name, this.dummy);
     }
   }
 
@@ -99,9 +90,9 @@ export class GameState {
   private onAnimationEnd = (e: any) => {
     // Check if we since started playing a different anim when this one started
     const name = (e.action as THREE.AnimationAction).getClip().name;
-    if (name === this.currentCharacter.currentAction.getClip().name) {
+    if (name === this.dummy.currentAction.getClip().name) {
       // No new anim was started, can revert to idle
-      this.playAnimation("idle", this.currentCharacter);
+      this.playAnimation("idle", this.dummy);
     }
   };
 
@@ -168,7 +159,7 @@ export class GameState {
 
     this.controls.update();
 
-    this.characters.forEach((char) => char.mixer.update(dt));
+    this.dummy.mixer.update(dt);
 
     this.renderer.render(this.scene, this.camera);
 
@@ -192,6 +183,51 @@ export class GameState {
     const floor = new THREE.Mesh(geom, mat);
     floor.rotateX(-Math.PI / 2);
 
+    floor.name = "floor";
+
     return floor;
+  }
+
+  private onClick = (e: MouseEvent) => {
+    // Only care about right-clicks
+    if (e.button !== 2) {
+      return;
+    }
+
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const clickCoords = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+    clickCoords.x /= rect.width;
+    clickCoords.y /= rect.height;
+
+    clickCoords.y = 1.0 - clickCoords.y;
+
+    clickCoords.x = clickCoords.x * 2.0 - 1.0;
+    clickCoords.y = clickCoords.y * 2.0 - 1.0;
+
+    const ndc = new THREE.Vector2(clickCoords.x, clickCoords.y);
+
+    this.raycaster.setFromCamera(ndc, this.camera);
+
+    const intersections = this.raycaster.intersectObjects([
+      this.floor,
+      this.dummy.object,
+    ]);
+    if (!intersections.length) {
+      return;
+    }
+
+    const hit = intersections[0];
+    if (hit.object.name !== "floor") {
+      return;
+    }
+
+    this.moveTo(hit.point);
+  };
+
+  private moveTo(position: THREE.Vector3) {
+    console.log("moving to ", position);
+
+    this.dummy.object.position.copy(position);
   }
 }
